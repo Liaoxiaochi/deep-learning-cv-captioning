@@ -28,6 +28,13 @@
 
 整套方案针对小数据集上的过拟合问题，通过强数据增强与模型集成来提升泛化能力。
 
+**部分结果展示：**
+
+| 训练曲线（数据增强 vs 基线） | 验证集混淆矩阵 |
+|:---:|:---:|
+| ![训练曲线](docs/images/part1_training_curves.png) | ![混淆矩阵](docs/images/part1_confusion_matrix.png) |
+| 引入数据增强后验证准确率超过基线峰值，验证损失持续下降 | 30 类逐类识别效果的行归一化混淆矩阵 |
+
 ## 第二部分 — 图像描述生成
 
 在 COCO 数据集上实现两种互补的图像描述方案：
@@ -40,6 +47,12 @@
    视觉编码器生成图像嵌入，**Transformer 编码器**将其映射到 GPT-2 的嵌入空间，再由部分冻结的
    **GPT-2** 解码器以温度采样的方式自回归生成描述。仅微调映射网络与 GPT-2 的首尾层，
    使模型保持轻量。
+
+**图像描述生成示例（CLIP ViT-L/14 在新 COCO 图像上的泛化测试）：**
+
+![图像描述示例](docs/images/part2_captioning_examples.png)
+
+> 图中 `PRED` 为模型生成的描述，`GT` 为真实人工标注。
 
 ---
 
@@ -54,7 +67,8 @@ deep-learning-cv-captioning/
 │   ├── helperDL.py              # 第二部分：数据集/词表工具、ResNet-50 编码器
 │   └── model_CLIP.py            # 第二部分：CLIP 编码器 + Transformer 映射 + GPT-2 解码器
 ├── docs/
-│   └── rendered_notebook.html   # 已执行、含全部输出与图表的 notebook
+│   ├── rendered_notebook.html   # 已执行、含全部输出与图表的 notebook
+│   └── images/                  # 从 notebook 导出的代表性结果图
 ├── .gitignore
 └── README.md
 ```
