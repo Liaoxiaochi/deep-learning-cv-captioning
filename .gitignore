@@ -14,7 +14,7 @@ train_set/
 test_set/
 data/
 coco/
-Images/
+/Images/
 *.zip
 
 # Model weights / checkpoints
