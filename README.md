@@ -1,89 +1,80 @@
-# Deep Learning: Image Classification & Caption Generation
+# 深度学习：图像分类与图像描述生成
 
-> Coursework for **COMP5625M Deep Learning** (MSc Advanced Computer Science, University of Leeds).
-> End-to-end PyTorch implementation covering convolutional image classification and
-> image-to-text caption generation with both RNN and Transformer (CLIP + GPT-2) decoders.
+> 利兹大学计算机科学硕士课程 **COMP5625M 深度学习** 作业。
+> 基于 PyTorch 的端到端实现，涵盖卷积神经网络图像分类，以及结合 RNN 与 Transformer（CLIP + GPT-2）的图像描述生成。
 
-This project is split into two parts:
+本项目分为两部分：
 
-| Part | Task | Techniques |
-|------|------|-----------|
-| **1** | Image classification on **TinyImageNet30** (30 classes, 64×64) | 5-layer CNN, data augmentation, CutMix, cosine annealing, ensembling + TTA, Kaggle leaderboard |
-| **2** | **Image caption generation** | ResNet-50 feature encoder + RNN decoder; CLIP vision encoder + Transformer mapper + GPT-2 decoder |
-
----
-
-## Part 1 — CNN Image Classification
-
-A custom 5-convolution CNN (`TinyCNN`) trained from scratch on the 30-class TinyImageNet
-subset (13,500 images at 64×64), with the predictions submitted to a private Kaggle
-competition leaderboard.
-
-**Key components** (see [`src/train_improved.py`](src/train_improved.py)):
-
-- **Architecture** — 5 conv blocks (64→128→256→256→512 channels) with BatchNorm + ReLU +
-  MaxPool, followed by a 1024-unit dense head with dropout.
-- **Regularisation / augmentation** — random crop, horizontal flip, rotation, colour jitter,
-  random grayscale, random erasing, label smoothing, and **CutMix**.
-- **Optimisation** — AdamW with weight decay and a **cosine-annealing** learning-rate schedule.
-- **Inference** — a **3-seed ensemble** combined with **test-time augmentation (TTA)** (original,
-  horizontal flip, centre crop, crop + flip) by averaging logits.
-
-The pipeline addresses the classic overfitting problem on a small dataset through
-aggressive augmentation and ensembling.
-
-## Part 2 — Image Caption Generation
-
-Two complementary captioning approaches on the COCO dataset:
-
-1. **CNN encoder + RNN decoder** ([`src/helperDL.py`](src/helperDL.py)) — a pretrained
-   **ResNet-50** extracts image feature vectors; captions are cleaned, tokenised, and a
-   vocabulary is built (min-frequency filtering); sequences are batched with padding /
-   `pack_padded_sequence` for an RNN language model.
-
-2. **CLIP + Transformer + GPT-2** ([`src/model_CLIP.py`](src/model_CLIP.py)) — a frozen
-   **CLIP** vision encoder produces image embeddings, a **Transformer encoder** maps them
-   into the GPT-2 embedding space, and a partially-frozen **GPT-2** decoder generates the
-   caption autoregressively with temperature sampling. Only the mapping network and the
-   first/last GPT-2 layers are fine-tuned, keeping the model lightweight.
+| 部分 | 任务 | 关键技术 |
+|------|------|---------|
+| **一** | **TinyImageNet30** 图像分类（30 类、64×64） | 5 层 CNN、数据增强、CutMix、余弦退火、集成 + TTA |
+| **二** | **图像描述生成** | ResNet-50 特征编码 + RNN 解码；CLIP 视觉编码 + Transformer 映射 + GPT-2 解码 |
 
 ---
 
-## Repository Structure
+## 第一部分 — CNN 图像分类
+
+在 30 类 TinyImageNet 子集（13,500 张 64×64 图像）上**从零训练**一个自定义的 5 层卷积网络（`TinyCNN`）。
+
+**核心要点**（见 [`src/train_improved.py`](src/train_improved.py)）：
+
+- **网络结构** — 5 个卷积块（通道数 64→128→256→256→512），配合 BatchNorm + ReLU + MaxPool，
+  最后接 1024 单元的全连接分类头与 Dropout。
+- **正则化 / 数据增强** — 随机裁剪、水平翻转、旋转、颜色抖动、随机灰度、随机擦除、标签平滑，
+  以及 **CutMix**。
+- **优化策略** — AdamW（带权重衰减）配合**余弦退火**学习率调度。
+- **推理** — **3 种子模型集成**结合**测试时增强（TTA）**（原图、水平翻转、中心裁剪、裁剪 + 翻转），
+  对各路 logits 取平均。
+
+整套方案针对小数据集上的过拟合问题，通过强数据增强与模型集成来提升泛化能力。
+
+## 第二部分 — 图像描述生成
+
+在 COCO 数据集上实现两种互补的图像描述方案：
+
+1. **CNN 编码器 + RNN 解码器**（[`src/helperDL.py`](src/helperDL.py)）— 预训练 **ResNet-50**
+   提取图像特征向量；对描述文本做清洗、分词并构建词表（按最小词频过滤）；序列通过
+   padding / `pack_padded_sequence` 批处理后送入 RNN 语言模型。
+
+2. **CLIP + Transformer + GPT-2**（[`src/model_CLIP.py`](src/model_CLIP.py)）— 冻结的 **CLIP**
+   视觉编码器生成图像嵌入，**Transformer 编码器**将其映射到 GPT-2 的嵌入空间，再由部分冻结的
+   **GPT-2** 解码器以温度采样的方式自回归生成描述。仅微调映射网络与 GPT-2 的首尾层，
+   使模型保持轻量。
+
+---
+
+## 目录结构
 
 ```
 deep-learning-cv-captioning/
 ├── notebooks/
-│   └── assessment.ipynb         # main coursework notebook (Part 1 + Part 2)
+│   └── assessment.ipynb         # 主作业 notebook（第一、二部分）
 ├── src/
-│   ├── train_improved.py        # Part 1: improved CNN training, ensemble + TTA, Kaggle submission
-│   ├── helperDL.py              # Part 2: dataset/vocab helpers, ResNet-50 encoder
-│   └── model_CLIP.py            # Part 2: CLIP encoder + Transformer mapper + GPT-2 decoder
+│   ├── train_improved.py        # 第一部分：改进版 CNN 训练、集成 + TTA
+│   ├── helperDL.py              # 第二部分：数据集/词表工具、ResNet-50 编码器
+│   └── model_CLIP.py            # 第二部分：CLIP 编码器 + Transformer 映射 + GPT-2 解码器
 ├── docs/
-│   └── rendered_notebook.html   # notebook with all cell outputs / figures rendered
+│   └── rendered_notebook.html   # 已执行、含全部输出与图表的 notebook
 ├── .gitignore
 └── README.md
 ```
 
-> **Note** — datasets (TinyImageNet30, COCO), trained model weights (`*.pth`), and Kaggle
-> submission files are intentionally excluded from version control (see `.gitignore`).
-> The rendered HTML in `docs/` preserves the executed results and figures.
+> **说明** — 数据集（TinyImageNet30、COCO）、训练好的模型权重（`*.pth`）等大文件已刻意排除在
+> 版本控制之外（见 `.gitignore`）。`docs/` 下的 HTML 保留了已执行的运行结果与图表。
 
-## Tech Stack
+## 技术栈
 
-`Python` · `PyTorch` · `torchvision` · `Hugging Face Transformers` (CLIP, GPT-2) ·
+`Python` · `PyTorch` · `torchvision` · `Hugging Face Transformers`（CLIP、GPT-2）·
 `scikit-learn` · `pandas` · `NumPy` · `Pillow` · `Matplotlib`
 
-## How to Run
+## 运行方式
 
-The notebook is designed for **Google Colab with a GPU runtime**:
+notebook 面向 **Google Colab GPU 运行时**设计：
 
-1. Open `notebooks/assessment.ipynb` in Colab and select a GPU runtime.
-2. Provide the TinyImageNet30 dataset (`train_set/`, `test_set/`) for Part 1 and the COCO
-   captions/images for Part 2.
-3. Run the cells top to bottom. For Part 1, `src/train_improved.py` can be run as a cell to
-   train the ensemble and generate the Kaggle submission CSV.
+1. 在 Colab 中打开 `notebooks/assessment.ipynb` 并选择 GPU 运行时。
+2. 为第一部分准备 TinyImageNet30 数据集（`train_set/`、`test_set/`），第二部分准备 COCO 描述与图像。
+3. 自上而下运行各单元。第一部分中，`src/train_improved.py` 可作为单元运行以训练集成模型。
 
 ---
 
-*Author: Xiaochi Liao (sc21xl2) — University of Leeds.*
+*作者：廖枭驰（Xiaochi Liao），利兹大学。*
