@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Datasets (TinyImageNet30, COCO) — not redistributed
+train_set/
+test_set/
+data/
+coco/
+Images/
+*.zip
+
+# Model weights / checkpoints
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+history_*.json
+
+# Kaggle submissions
+sc21xl2.csv
+submission*.csv
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
